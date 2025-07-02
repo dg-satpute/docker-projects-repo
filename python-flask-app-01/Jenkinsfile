@@ -1,20 +1,23 @@
 pipeline {
     agent any
     environment {
-        DOCKER_IMAGE = <ecr_url>
-        AWS_REGION = "ap-south-1"
-        EKS_CLUSTER = "sample-eks-cluster"
+        registry = "841014/python-flask-apps"  // Docker Hub image repository
+        registryCredential = 'dockerhub'       // Docker Hub credentials ID in Jenkins
     }
 
     stages {
-        stage("Checkout") {
+        stage('Git Checkout') {
             steps {
-                git "<git-hub-url>"
+                git branch: 'main', credentialsId: 'd66428ce-7861-4620-9473-34067e1e87d0', url: 'https://github.com/dg-satpute/docker-projects-repo.git'
             }
         }
         stage("Build Image") {
             steps {
-                docker.build("${DOCKER_IMAGE}")
+                script {
+                    img = "${registry}:${env.BUILD_ID}"
+                    println("Building Docker Image: ${img}")
+                    dockerImage = docker.build("${img}")
+                }
             }
         }
     }
